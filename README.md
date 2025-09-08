@@ -37,3 +37,7 @@ Successfully achieving the goals of the project will require skills in data mini
 5. Open web link to view the Dash application
 
 \*\* See CM3203 Final Report.pdf for the complete project report.
+
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
