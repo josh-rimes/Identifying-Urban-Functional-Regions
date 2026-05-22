@@ -26,8 +26,18 @@ Successfully achieving the goals of the project will require skills in data mini
 5. Compare the success of functional regions in both cities to find insights on the impacts of urban layout.
 6. Write the report.
 
-### Project complete
-
 \*\* See CM3203 Initial Plan.pdf for a more in-depth plan for the project.
 
+### How to run:
+
+1. Download data_app folder (or copy entire repo)
+2. Check requirements.txt for required Python libraries
+3. In terminal run `cd data_app`
+4. Run `python app.py`
+5. Open web link to view the Dash application
+
 \*\* See CM3203 Final Report.pdf for the complete project report.
+
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
