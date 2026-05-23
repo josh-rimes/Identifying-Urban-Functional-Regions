@@ -44,7 +44,7 @@ def clean_POI_data(df):
 
 
 # Function add_cluster_ids makes an array of POI coordinates, passes them through the DBSCAN algorithm, and adds the resulting cluster ids to the data table
-def add_cluster_ids(df, level, slider_value, on_progress=None):
+def add_cluster_ids(df, level, slider_value, on_progress=None, selected_groups=None):
     from classification import groups, categories, classes
 
     df['cluster id'] = None # Makes a new column in the dataframe to hold the cluster ids
@@ -69,6 +69,11 @@ def add_cluster_ids(df, level, slider_value, on_progress=None):
             for i in range(0, len(df.index)):
                 # This if statement finds any POIs that are within the classification of the group (and not in th index bin), and adds the necessary data to the arrays ready for clustering
                 if (i not in index_bin) and (classification_dict[classification] == data_utilities.classify_data(level, df.at[i, 'pointX classification code'])):
+                    # Skip POIs whose group is not in the selected visible groups
+                    if selected_groups is not None and 'All' not in selected_groups:
+                        poi_group = data_utilities.classify_data(1, df.at[i, 'pointX classification code'])
+                        if poi_group not in selected_groups:
+                            continue
                     coord_array.append([float(df.at[i, 'lat']), float(df.at[i, 'lon'])]) # Adds the lat and long coordinate pair to the coords array
                     index_array.append(i)
 

@@ -38,7 +38,7 @@ def _run_processing(poi_df, index_bin, level, slider, display_checklist, cluster
     try:
         poi_handling.index_bin = index_bin
         poi_df_result, cluster_data = poi_handling.add_cluster_ids(
-            poi_df, level, slider, on_progress=on_progress)
+            poi_df, level, slider, on_progress=on_progress, selected_groups=cluster_dropdown)
 
         on_progress('Creating map...')
         data_output = [
@@ -102,7 +102,7 @@ app.layout = [
                        id = 'slider_label', 
                        style = {'textAlign':'centre', 'margin-bottom':'5px'}),
             dcc.Slider(0.0005, 0.005, 0.0005, 
-                       value = 0.001, 
+                       value = 0.002, 
                        marks = None, 
                        id = 'slider', 
                        className = 'slider',
