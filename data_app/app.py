@@ -28,7 +28,7 @@ class _ProcessingState:
 _state = _ProcessingState()
 
 
-def _run_processing(poi_df, index_bin, level, slider, display_checklist, cluster_dropdown, se_df, layer_dropdown, filename, options, generation):
+def _run_processing(poi_df, index_bin, level, slider, display_checklist, cluster_dropdown, se_df, layer_dropdown, filename, options, generation, min_samples=10):
     """Run clustering and map creation in a background thread."""
     def on_progress(msg):
         with _state.lock:
@@ -38,7 +38,7 @@ def _run_processing(poi_df, index_bin, level, slider, display_checklist, cluster
     try:
         poi_handling.index_bin = index_bin
         poi_df_result, cluster_data = poi_handling.add_cluster_ids(
-            poi_df, level, slider, on_progress=on_progress, selected_groups=cluster_dropdown)
+            poi_df, level, slider, on_progress=on_progress, selected_groups=cluster_dropdown, min_samples=min_samples)
 
         on_progress('Creating map...')
         data_output = [
@@ -59,108 +59,98 @@ def _run_processing(poi_df, index_bin, level, slider, display_checklist, cluster
                 _state.error = str(e)
                 _state.is_processing = False
 
-app.layout = [
-    html.H1(children = 'Interactive Urban Correlation Map'),
+app.layout = html.Div([
 
-    # UPLOAD DIV
+    # LEFT SIDEBAR
     html.Div([
         html.Div([
-            dcc.Upload(id = 'poi_file_input', 
-                       children = html.Button('Choose POI file / Drag & drop', 
-                       className = 'upload-button')) # Opens pop-up for upload when clicked
-        ], className = 'upload-button-div'),
+            html.Div(className='title-dot'),
+            html.H1([
+                html.Span('Urban', className='title-urban'),
+                html.Span(' Cluster', className='title-cluster'),
+            ]),
+        ], className='sidebar-header'),
 
         html.Div([
-            dcc.Upload(id = 'se_file_input', 
-                       children = html.Button('Choose Socio-Economic file / Drag & drop', 
-                       className = 'upload-button')) # Opens pop-up for upload when clicked
-        ], className = 'upload-button-div'),
-    ], className = 'upload-div'),
+            dcc.Upload(id='poi_file_input',
+                children=html.Button('Upload POI File', className='upload-button')),
+            dcc.Upload(id='se_file_input',
+                children=html.Button('Upload SE File', className='upload-button')),
+        ], className='sidebar-section'),
 
-    # TODO: Change minimum POIs for clusters
-    # TOOLBAR DIV
+        html.Div([
+            html.Span('CATEGORIES', className='section-label'),
+            dcc.Dropdown(
+                ['All', 'Accommodation, eating and drinking', 'Commercial services',
+                 'Attractions', 'Sport and entertainment', 'Education and health',
+                 'Public Infrastructure', 'Manufacturing and production', 'Retail', 'Transport'],
+                'All', multi=True, id='cluster_dropdown', className='sidebar-dropdown'),
+        ], className='sidebar-section'),
+
+        html.Div([
+            html.Span('ALGORITHM', className='section-label'),
+            html.Div([
+                html.Span('Epsilon (km)', className='slider-label-text'),
+                dcc.Slider(0.0005, 0.005, 0.0005,
+                    value=0.002, marks=None, id='slider',
+                    tooltip={'placement': 'bottom', 'always_visible': True}),
+            ], className='slider-container'),
+            html.Div([
+                html.Span('Min samples', className='slider-label-text'),
+                dcc.Slider(1, 50, 1,
+                    value=10, marks=None, id='min_samples_slider',
+                    tooltip={'placement': 'bottom', 'always_visible': True}),
+            ], className='slider-container'),
+        ], className='sidebar-section'),
+
+        html.Div([
+            html.Span('MAP LAYER', className='section-label'),
+            dcc.Checklist(
+                id='display_checklist',
+                options=[
+                    {'label': 'Hide clusters', 'value': 'clusters'},
+                    {'label': 'Hide layer', 'value': 'layer'},
+                ],
+                value=[],
+                className='display-checklist'),
+            html.Label('Socio-economic layer:', className='control-label', style={'marginTop': '12px'}),
+            dcc.Dropdown(options=['None'], value='None', multi=False,
+                id='layer_dropdown', className='sidebar-dropdown'),
+        ], className='sidebar-section'),
+
+        html.Div([
+            html.Label('Classification Level', className='control-label'),
+            dcc.Dropdown(options=['1', '2', '3'], value='1', multi=False,
+                id='level_dropdown', className='sidebar-dropdown'),
+        ], className='sidebar-section'),
+
+        html.Div([
+            html.Span('CORRELATION', className='section-label'),
+            dcc.Input(placeholder='Enter a cluster id...', type='text', value='',
+                id='cluster_id_input', className='sidebar-input'),
+            dcc.Input(placeholder='Enter a msoa id...', type='text', value='',
+                id='msoa_id_input', className='sidebar-input'),
+            html.Button('Compute correlation', id='compute_button', className='compute-button'),
+        ], className='sidebar-section'),
+
+    ], className='left-sidebar'),
+
+    # CENTER MAP + TABLE
     html.Div([
-        html.Div([
-            dcc.Checklist(id = 'display_checklist', 
-                          options = [{'label': 'Hide clusters', 'value': 'clusters'},{'label': 'Hide layer', 'value': 'layer'},],
-                          value = [], # Default checklist has Hide clusters left blank
-                          inline = True),
-        ], className = 'checklist-div'),
+        html.Div(id='data_output'),
+    ], className='map-area'),
 
-        html.Div([
-            html.Label(children = 'Select which clusters are visible:', 
-                       id = 'cluster_dropdown_label', 
-                       style = {'textAlign':'centre', 'margin-bottom':'5px'}),
-            dcc.Dropdown(['All', 'Accommodation, eating and drinking', 'Commercial services', 'Attractions', 'Sport and entertainment', 'Education and health', 'Public Infrastructure', 'Manufacturing and production', 'Retail', 'Transport'], 
-                         'All', 
-                         multi = True, 
-                         id = 'cluster_dropdown'),
-        ], className = 'dropdown-div'),
-        
-        html.Div([
-            html.Label(children = 'Size of clusters:', 
-                       id = 'slider_label', 
-                       style = {'textAlign':'centre', 'margin-bottom':'5px'}),
-            dcc.Slider(0.0005, 0.005, 0.0005, 
-                       value = 0.002, 
-                       marks = None, 
-                       id = 'slider', 
-                       className = 'slider',
-                       tooltip = {'placement': 'bottom', 'always_visible': True}),
-        ], className = 'slider-div'),
-
-        html.Div([
-            html.Label(children = 'Level of classification:', 
-                       id = 'level_dropdown_label', 
-                       style = {'textAlign':'centre', 'margin-bottom':'5px'}),
-            dcc.Dropdown(options = ['1', '2', '3'], 
-                         value = '1', 
-                         multi = False, 
-                         id = 'level_dropdown')
-        ], className = 'dropdown-div'),
-
-        html.Div([
-            html.Label(children = 'Select socio-economic layer:', 
-                       id = 'layer_dropdown_label', 
-                       style = {'textAlign':'centre', 'margin-bottom':'5px'}),
-            dcc.Dropdown(options = ['None'], 
-                         value = 'None', 
-                         multi = False, 
-                         id = 'layer_dropdown')
-        ], className = 'dropdown-div'),
-    ], className = 'toolbar-div'),
-
-    html.Div(id = 'data_output', className = 'data-div'), # Displays the data table
-
-    # CORRELATION DIV
-    html.Div([
-        html.Div(
-            dcc.Input(
-            placeholder = 'Enter a cluster id...',
-            type = 'text',
-            value = '',
-            id = 'cluster_id_input'),
-            className = 'input-div'),
-        html.Div(
-            dcc.Input(
-                placeholder = 'Enter a msoa id...',
-                type = 'text',
-                value = '',
-                id = 'msoa_id_input'),
-                className = ' input-div'),
-        html.Button('Compute correlation', id = 'compute_button', className = 'compute-button')
-    ], className = 'correlation-div'),
+    # RIGHT SIDEBAR
+    html.Div(className='right-sidebar'),
 
     dcc.Interval(id='progress-interval', interval=500, n_intervals=0, disabled=True),
-
     html.Div([
         html.Div(className='spinner'),
         html.P('Processing...', id='loading-status-text')
     ], id='loading-overlay', className='loading-overlay', style={'display': 'none'}),
-
-    html.H2(children = 'Made by Josh Rimes    2025'),
     dcc.Store(id='poi-cleaned-store', storage_type='local'),
-]
+
+], className='app-container')
 
 @callback(
     Output('poi-cleaned-store', 'data'),
@@ -194,11 +184,12 @@ def cache_poi_data(poi_file_input, filename):
     Input('layer_dropdown', 'value'),
     Input('level_dropdown', 'value'),
     Input('slider', 'value'),
+    Input('min_samples_slider', 'value'),
     Input('cluster_id_input', 'value'),
     Input('msoa_id_input', 'value'),
     Input('compute_button', 'value'))
 
-def update_output(poi_store_data, se_file_input, display_checklist, cluster_dropdown, layer_dropdown, level_dropdown, slider, cluster_id_input, msoa_id_input, compute_button):
+def update_output(poi_store_data, se_file_input, display_checklist, cluster_dropdown, layer_dropdown, level_dropdown, slider, min_samples_slider, cluster_id_input, msoa_id_input, compute_button):
     if poi_store_data is None:
         return no_update, ['None'], {'display': 'none'}, True
 
@@ -232,7 +223,7 @@ def update_output(poi_store_data, se_file_input, display_checklist, cluster_drop
 
     thread = threading.Thread(
         target=_run_processing,
-        args=(poi_df, index_bin, int(level_dropdown), slider, display_checklist, cluster_dropdown, se_df, layer_dropdown, filename, options, gen),
+        args=(poi_df, index_bin, int(level_dropdown), slider, display_checklist, cluster_dropdown, se_df, layer_dropdown, filename, options, gen, min_samples_slider),
         daemon=True
     )
     thread.start()
