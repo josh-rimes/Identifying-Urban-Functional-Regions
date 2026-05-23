@@ -44,7 +44,7 @@ def clean_POI_data(df):
 
 
 # Function add_cluster_ids makes an array of POI coordinates, passes them through the DBSCAN algorithm, and adds the resulting cluster ids to the data table
-def add_cluster_ids(df, level, slider_value):
+def add_cluster_ids(df, level, slider_value, on_progress=None):
     from classification import groups, categories, classes
 
     df['cluster id'] = None # Makes a new column in the dataframe to hold the cluster ids
@@ -59,7 +59,10 @@ def add_cluster_ids(df, level, slider_value):
             classification_dict = classes
 
         cluster_ids = []
-        for classification in classification_dict:
+        classification_list = list(classification_dict)
+        for idx, classification in enumerate(classification_list):
+            if on_progress:
+                on_progress(f'Clustering {idx + 1}/{len(classification_list)}...')
             coord_array = [] # List of coordinates that'll be inputted into the DBSCAN cluster
             index_array = [] # List that holds the indexes of all POIs that need updating
 
@@ -91,6 +94,8 @@ def add_cluster_ids(df, level, slider_value):
         print('Classification id(' + '10' + ') clustered', end = '\n')
 
         # Assigns values from the cluster data - lon, lat are 2D arrays that hold the coordinates for square clusters, colors holds a list of cluster colors
+        if on_progress:
+            on_progress('Generating cluster shapes...')
         lon, lat, colors = spatial_utilities.create_cluster_data(df, set(cluster_ids), index_bin)
         cluster_data = [lon, lat, colors] # Zips the variables for the sake of cleanliness
 

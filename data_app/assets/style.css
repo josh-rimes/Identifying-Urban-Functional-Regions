@@ -1,116 +1,155 @@
 body {
-    font-family: Arial;
+  font-family: Arial;
 }
 
 h1 {
-    text-align: center;
-    margin-bottom: 2%;
-    font-size: 4cap;
+  text-align: center;
+  margin-bottom: 2%;
+  font-size: 4cap;
 }
 
 h2 {
-    text-align: center;
-    margin-top: 2%;
-    font-size: 1cap;
+  text-align: center;
+  margin-top: 2%;
+  font-size: 1cap;
 }
 
 div.upload-div {
-    display: flex;
-    justify-content: center;
-    align-items: 'center';
+  display: flex;
+  justify-content: center;
+  align-items: "center";
 }
 
 div.upload-button-div {
-    margin-bottom: 2%;
-    float: left;
-    width: 50%;
-    margin-left: 2%;
-    margin-right: 2%;
+  margin-bottom: 2%;
+  float: left;
+  width: 50%;
+  margin-left: 2%;
+  margin-right: 2%;
 }
 
 .upload-button {
-    position: relative;
-    left: 50%;
-    border-radius: 5px;
-    transform: translate(-50%, 0%);
-    padding: 2% 30%;
-    background-color: #bdbdbd;
-    transition-duration: 0.4s;
-    font-size: 2cap;
+  position: relative;
+  left: 50%;
+  border-radius: 5px;
+  transform: translate(-50%, 0%);
+  padding: 2% 30%;
+  background-color: #bdbdbd;
+  transition-duration: 0.4s;
+  font-size: 2cap;
 }
 
 .upload-button:hover {
-    background-color: #ffffff;
+  background-color: #ffffff;
 }
 
 div.toolbar-div {
-    display: flex;
-    justify-content: center;
-    align-items: 'center';
+  display: flex;
+  justify-content: center;
+  align-items: "center";
 }
 
 div.checklist-div {
-    border: 2px solid black;
-    border-radius: 5px;
-    float: left;
-    padding: 1% 1%;
-    margin-right: 2%;
+  border: 2px solid black;
+  border-radius: 5px;
+  float: left;
+  padding: 1% 1%;
+  margin-right: 2%;
 }
 
 div.dropdown-div {
-    border: 2px solid black;
-    border-radius: 5px;
-    float: left;
-    padding: 1% 1%;
-    margin-right: 2%;
+  border: 2px solid black;
+  border-radius: 5px;
+  float: left;
+  padding: 1% 1%;
+  margin-right: 2%;
 }
 
 div.slider-div {
-    text-align: center;
-    border: 2px solid black;
-    border-radius: 5px;
-    float: left;
-    padding: 1% 1%;
-    width: 25%;
-    margin-right: 2%;
+  text-align: center;
+  border: 2px solid black;
+  border-radius: 5px;
+  float: left;
+  padding: 1% 1%;
+  width: 25%;
+  margin-right: 2%;
 }
 
 .slider {
-    display: flex;
-    justify-content: center;
-    float: inline-end;
-    width: 80%;
+  display: flex;
+  justify-content: center;
+  float: inline-end;
+  width: 80%;
 }
 
 div.data-div {
-    border: 2px solid black;
-    border-radius: 5px;
-    margin-top: 2%;
+  border: 2px solid black;
+  border-radius: 5px;
+  margin-top: 2%;
 }
 
 div.correlation-div {
-    border: 2px solid black;
-    border-radius: 5px;
-    margin-top: 2%;
-    margin-right: 75%;
+  border: 2px solid black;
+  border-radius: 5px;
+  margin-top: 2%;
+  margin-right: 75%;
 }
 
 div.input-div {
-    border: 2px solid black;
-    border-radius: 5px;
-    padding: 1% 1%;
-    margin: 2%;
+  border: 2px solid black;
+  border-radius: 5px;
+  padding: 1% 1%;
+  margin: 2%;
 }
 
 .compute-button {
-    border-radius: 5px;
-    padding: 2% 2%;
-    background-color: #bdbdbd;
-    transition-duration: 0.4s;
-    margin-top: 0%;
-    margin: 2%;
+  border-radius: 5px;
+  padding: 2% 2%;
+  background-color: #bdbdbd;
+  transition-duration: 0.4s;
+  margin-top: 0%;
+  margin: 2%;
 }
 
 .compute-button:hover {
-    background-color: #ffffff;
+  background-color: #ffffff;
+}
+
+/* Loading overlay — fixed top-right toast, non-blocking */
+.loading-overlay {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #ffffff;
+  border: 2px solid #333333;
+  border-radius: 8px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid #e0e0e0;
+  border-top-color: #333333;
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+#loading-status-text {
+  margin: 0;
+  font-size: 14px;
+  color: #333333;
 }
