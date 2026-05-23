@@ -1,6 +1,7 @@
 # INFO: UPDATE DOCUMENTATION
 # BUG: CHANGE MIN_SAMPLES (THIS MIGHT CHANGE THE WHOLE LANDSCAPE OF THE ANALYSIS)
-from dash import Dash, html, dcc, callback, Input, Output, State
+from dash import Dash, html, dcc, callback, Input, Output, State, no_update
+import io
 import pandas as pd
 import data_utilities
 import spatial_utilities
@@ -105,13 +106,33 @@ app.layout = [
     ], className = 'correlation-div'),
 
     html.H2(children = 'Made by Josh Rimes    2025'),
+    dcc.Store(id='poi-cleaned-store', storage_type='local'),
 ]
+
+@callback(
+    Output('poi-cleaned-store', 'data'),
+    Input('poi_file_input', 'contents'),
+    State('poi_file_input', 'filename'),
+    prevent_initial_call=True)
+def cache_poi_data(poi_file_input, filename):
+    if poi_file_input is None:
+        return no_update
+    poi_df = data_utilities.parse_contents(poi_file_input, filename)
+    if not isinstance(poi_df, pd.DataFrame):
+        return no_update
+    poi_df = poi_handling.clean_POI_data(poi_df)
+    poi_df = poi_df.reset_index(drop=True)  # Ensure sequential index after dropped invalid rows
+    return {
+        'filename': filename,
+        'data': poi_df.to_json(date_format='iso', orient='split'),
+        'index_bin': []  # All invalid rows already removed; no gaps remain
+    }
+
 
 @callback(
     Output('data_output', 'children'),
     Output('layer_dropdown', 'options'),
-    Input('poi_file_input', 'contents'),
-    State('poi_file_input', 'filename'),
+    Input('poi-cleaned-store', 'data'),
     Input('se_file_input', 'contents'),
     Input('display_checklist', 'value'),
     Input('cluster_dropdown', 'value'),
@@ -122,7 +143,7 @@ app.layout = [
     Input('msoa_id_input', 'value'),
     Input('compute_button', 'value'))
 
-def update_output(poi_file_input, filename, se_file_input, display_checklist, cluster_dropdown, layer_dropdown, level_dropdown, slider, cluster_id_input, msoa_id_input, compute_button):
+def update_output(poi_store_data, se_file_input, display_checklist, cluster_dropdown, layer_dropdown, level_dropdown, slider, cluster_id_input, msoa_id_input, compute_button):
     data_output = None
     options = ['None']
     poi_df = None
@@ -130,11 +151,15 @@ def update_output(poi_file_input, filename, se_file_input, display_checklist, cl
 
     print('\n\nUpdating output:')
 
-    if poi_file_input is not None:
-        poi_df = data_utilities.parse_contents(poi_file_input, filename) # Parse the POI data
-        poi_df = poi_handling.clean_POI_data(poi_df) # Clean the POI data
+    if poi_store_data is not None:
+        poi_df = pd.read_json(io.StringIO(poi_store_data['data']), orient='split') # Load cleaned POI data from cache
+        poi_handling.index_bin = poi_store_data['index_bin'] # Restore index bin used during cleaning
+        # JSON round-trip converts numeric-string codes (e.g. '03170245') to integers; restore as zero-padded strings
+        if pd.api.types.is_numeric_dtype(poi_df['pointX classification code']):
+            poi_df['pointX classification code'] = poi_df['pointX classification code'].fillna(0).astype(int).astype(str).str.zfill(8)
+        filename = poi_store_data['filename']
         poi_df, cluster_data = poi_handling.add_cluster_ids(poi_df, int(level_dropdown), slider) # Cluster POIs
-    
+
         if se_file_input is not None:
             se_df = data_utilities.parse_contents(se_file_input, 'file.csv') # Parse the socio-economic data
             se_df = se_handling.clean_se_data(se_df) # Clean the socio-economic data

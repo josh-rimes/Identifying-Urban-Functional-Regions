@@ -69,6 +69,9 @@ def add_cluster_ids(df, level, slider_value):
                     coord_array.append([float(df.at[i, 'lat']), float(df.at[i, 'lon'])]) # Adds the lat and long coordinate pair to the coords array
                     index_array.append(i)
 
+            if not coord_array: # Skip classifications with no matching POIs
+                continue
+
             temp_cluster_ids = spatial_utilities.DBSCAN(coord_array, slider_value)
 
             num_clusters += len(set(temp_cluster_ids))
@@ -95,6 +98,7 @@ def add_cluster_ids(df, level, slider_value):
 
 
     except Exception as e:
-        print(e)
+        import traceback
+        traceback.print_exc()
 
         return df
