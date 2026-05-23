@@ -11,6 +11,7 @@ import poi_handling
 import se_handling
 
 app = Dash(__name__, suppress_callback_exceptions = True)
+app.title = 'Urban Cluster'
 
 layers = ['None']
 
@@ -82,7 +83,7 @@ app.layout = html.Div([
                 ['All', 'Accommodation, eating and drinking', 'Commercial services',
                  'Attractions', 'Sport and entertainment', 'Education and health',
                  'Public Infrastructure', 'Manufacturing and production', 'Retail', 'Transport'],
-                'All', multi=True, id='cluster_dropdown', className='sidebar-dropdown'),
+                ['Retail'], multi=True, id='cluster_dropdown', className='sidebar-dropdown'),
         ], className='sidebar-section'),
 
         html.Div([
@@ -122,6 +123,29 @@ app.layout = html.Div([
                 id='level_dropdown', className='sidebar-dropdown'),
         ], className='sidebar-section'),
 
+    ], className='left-sidebar'),
+
+    # CENTER MAP + TABLE
+    html.Div([
+        html.Button(
+            ['MAP  ', html.Span('▼', id='map-toggle-arrow')],
+            id='map-toggle-banner',
+            className='table-toggle-banner',
+            style={'marginTop': '0'},
+            n_clicks=0,
+        ),
+        html.Div(id='map_output'),
+        html.Button(
+            ['TABLE  ', html.Span('▶', id='table-toggle-arrow')],
+            id='table-toggle-banner',
+            className='table-toggle-banner',
+            n_clicks=0,
+        ),
+        html.Div(id='table_output', className='table-content', style={'display': 'none'}),
+    ], className='map-area'),
+
+    # RIGHT SIDEBAR
+    html.Div([
         html.Div([
             html.Span('CORRELATION', className='section-label'),
             dcc.Input(placeholder='Enter a cluster id...', type='text', value='',
@@ -130,23 +154,7 @@ app.layout = html.Div([
                 id='msoa_id_input', className='sidebar-input'),
             html.Button('Compute correlation', id='compute_button', className='compute-button'),
         ], className='sidebar-section'),
-
-    ], className='left-sidebar'),
-
-    # CENTER MAP + TABLE
-    html.Div([
-        html.Div(id='map_output'),
-        html.Button(
-            ['TABLE  ', html.Span('▼', id='table-toggle-arrow')],
-            id='table-toggle-banner',
-            className='table-toggle-banner',
-            n_clicks=0,
-        ),
-        html.Div(id='table_output', className='table-content'),
-    ], className='map-area'),
-
-    # RIGHT SIDEBAR
-    html.Div(className='right-sidebar'),
+    ], className='right-sidebar'),
 
     dcc.Interval(id='progress-interval', interval=500, n_intervals=0, disabled=True),
     html.Div([
@@ -264,6 +272,17 @@ def poll_progress(n_intervals):
     Input('table-toggle-banner', 'n_clicks'),
     prevent_initial_call=True)
 def toggle_table(n_clicks):
+    if n_clicks % 2 == 1:
+        return {}, '▼'
+    return {'display': 'none'}, '▶'
+
+
+@callback(
+    Output('map_output', 'style'),
+    Output('map-toggle-arrow', 'children'),
+    Input('map-toggle-banner', 'n_clicks'),
+    prevent_initial_call=True)
+def toggle_map(n_clicks):
     if n_clicks % 2 == 1:
         return {'display': 'none'}, '▶'
     return {}, '▼'

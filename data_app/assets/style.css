@@ -371,7 +371,6 @@ body {
   justify-content: space-between;
   width: 100%;
   padding: 10px 16px;
-  margin-top: 40px;
   background-color: var(--bg-sidebar);
   border: none;
   border-top: 1px solid var(--border);
@@ -400,4 +399,21 @@ body {
 .dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner td,
 .dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner th {
   color: var(--text-secondary) !important;
+}
+
+/* --- MAP ATTRIBUTION --- */
+.maplibregl-ctrl-attrib,
+.mapboxgl-ctrl-attrib {
+  display: none !important;
+}
+
+/* --- MAP LEGEND --- */
+.js-plotly-plot .plotly .legendtext {
+  fill: var(--text-secondary) !important;
+}
+
+/* --- MAP MODEBAR (move to bottom) --- */
+.js-plotly-plot .plotly .modebar-container {
+  top: auto !important;
+  bottom: 0 !important;
 }
