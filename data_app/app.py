@@ -73,8 +73,8 @@ app.layout = html.Div([
         html.Div([
             dcc.Upload(id='poi_file_input',
                 children=html.Button('Upload POI File', className='upload-button')),
-            dcc.Upload(id='se_file_input',
-                children=html.Button('Upload SE File', className='upload-button')),
+            dcc.Upload(id='se_file_input', disabled=True,
+                children=html.Button('Upload SE File', className='upload-button', disabled=True, style={'opacity': '0.4', 'cursor': 'not-allowed'})),
         ], className='sidebar-section'),
 
         html.Div([
