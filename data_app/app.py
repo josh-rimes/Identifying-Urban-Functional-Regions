@@ -41,14 +41,12 @@ def _run_processing(poi_df, index_bin, level, slider, display_checklist, cluster
             poi_df, level, slider, on_progress=on_progress, selected_groups=cluster_dropdown, min_samples=min_samples)
 
         on_progress('Creating map...')
-        data_output = [
-            map_handling.create_map(poi_df_result, cluster_data, display_checklist, cluster_dropdown, se_df, layer_dropdown, filename),
-            data_utilities.data_display(poi_df_result, filename)
-        ]
+        map_children = map_handling.create_map(poi_df_result, cluster_data, display_checklist, cluster_dropdown, se_df, layer_dropdown, filename)
+        table_children = data_utilities.data_display(poi_df_result, filename)
 
         with _state.lock:
             if _state.generation == generation:
-                _state.result = (data_output, options)
+                _state.result = (map_children, table_children, options)
                 _state.is_processing = False
 
     except Exception as e:
@@ -137,7 +135,14 @@ app.layout = html.Div([
 
     # CENTER MAP + TABLE
     html.Div([
-        html.Div(id='data_output'),
+        html.Div(id='map_output'),
+        html.Button(
+            ['TABLE  ', html.Span('▼', id='table-toggle-arrow')],
+            id='table-toggle-banner',
+            className='table-toggle-banner',
+            n_clicks=0,
+        ),
+        html.Div(id='table_output', className='table-content'),
     ], className='map-area'),
 
     # RIGHT SIDEBAR
@@ -173,7 +178,8 @@ def cache_poi_data(poi_file_input, filename):
 
 
 @callback(
-    Output('data_output', 'children'),
+    Output('map_output', 'children'),
+    Output('table_output', 'children'),
     Output('layer_dropdown', 'options'),
     Output('loading-overlay', 'style'),
     Output('progress-interval', 'disabled'),
@@ -191,7 +197,7 @@ def cache_poi_data(poi_file_input, filename):
 
 def update_output(poi_store_data, se_file_input, display_checklist, cluster_dropdown, layer_dropdown, level_dropdown, slider, min_samples_slider, cluster_id_input, msoa_id_input, compute_button):
     if poi_store_data is None:
-        return no_update, ['None'], {'display': 'none'}, True
+        return no_update, no_update, ['None'], {'display': 'none'}, True
 
     print('\n\nUpdating output:')
 
@@ -228,11 +234,12 @@ def update_output(poi_store_data, se_file_input, display_checklist, cluster_drop
     )
     thread.start()
 
-    return no_update, no_update, {'display': 'flex'}, False
+    return no_update, no_update, no_update, {'display': 'flex'}, False
 
 
 @callback(
-    Output('data_output', 'children', allow_duplicate=True),
+    Output('map_output', 'children', allow_duplicate=True),
+    Output('table_output', 'children', allow_duplicate=True),
     Output('layer_dropdown', 'options', allow_duplicate=True),
     Output('loading-status-text', 'children'),
     Output('loading-overlay', 'style', allow_duplicate=True),
@@ -243,12 +250,23 @@ def poll_progress(n_intervals):
     with _state.lock:
         if not _state.is_processing:
             if _state.result is not None:
-                data_output, options = _state.result
+                map_children, table_children, options = _state.result
                 _state.result = None
-                return data_output, options, 'Done!', {'display': 'none'}, True
+                return map_children, table_children, options, 'Done!', {'display': 'none'}, True
             # Error or unexpected state — hide overlay
-            return no_update, no_update, _state.error or '', {'display': 'none'}, True
-        return no_update, no_update, _state.status, no_update, no_update
+            return no_update, no_update, no_update, _state.error or '', {'display': 'none'}, True
+        return no_update, no_update, no_update, _state.status, no_update, no_update
+
+
+@callback(
+    Output('table_output', 'style'),
+    Output('table-toggle-arrow', 'children'),
+    Input('table-toggle-banner', 'n_clicks'),
+    prevent_initial_call=True)
+def toggle_table(n_clicks):
+    if n_clicks % 2 == 1:
+        return {'display': 'none'}, '▶'
+    return {}, '▼'
 
 
 if __name__ == '__main__':

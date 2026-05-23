@@ -27,7 +27,7 @@ body {
 /* --- APP SHELL --- */
 .app-container {
   display: grid;
-  grid-template-columns: 280px 1fr 260px;
+  grid-template-columns: 350px 1fr 260px;
   height: 100vh;
   overflow: hidden;
 }
@@ -37,8 +37,13 @@ body {
   background-color: var(--bg-sidebar);
   border-right: 1px solid var(--border);
   overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
   display: flex;
   flex-direction: column;
+}
+
+.left-sidebar::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Edge */
 }
 
 .sidebar-header {
@@ -197,9 +202,14 @@ body {
 /* --- CENTER MAP AREA --- */
 .map-area {
   overflow-y: auto;
+  scrollbar-width: none; /* Firefox */
   background-color: var(--bg-primary);
   display: flex;
   flex-direction: column;
+}
+
+.map-area::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Edge */
 }
 
 /* --- RIGHT SIDEBAR --- */
@@ -351,5 +361,43 @@ body {
 #loading-status-text {
   margin: 0;
   font-size: 14px;
-  color: #333333;
+  color: var(--text-secondary);
+}
+
+/* --- DATA TABLE --- */
+.table-toggle-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 16px;
+  margin-top: 40px;
+  background-color: var(--bg-sidebar);
+  border: none;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    background-color 0.2s,
+    color 0.2s;
+}
+
+.table-toggle-banner:hover {
+  background-color: var(--bg-card);
+  color: var(--text-secondary);
+}
+
+.table-content {
+  overflow: hidden;
+}
+
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner td,
+.dash-table-container .dash-spreadsheet-container .dash-spreadsheet-inner th {
+  color: var(--text-secondary) !important;
 }
