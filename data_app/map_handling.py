@@ -24,7 +24,14 @@ def create_map(poi_data, cluster_data, checklist_value, cluster_value, se_data, 
                          zoom = 13, 
                          height = 600)
     fig.update_layout(map_style = 'open-street-map') # The map figure uses the open street map base style
-    fig.update_layout(margin = {'r':0,'t':0,'l':0,'b':0})
+    fig.update_layout(margin = {'r':0,'t':0,'l':0,'b':0}, paper_bgcolor='rgba(0,0,0,0)', legend=dict(
+        x=1, y=1,
+        xanchor='right', yanchor='top',
+        bgcolor='#1a2234',
+        bordercolor='#2d3a50',
+        borderwidth=1,
+        title=''
+    ))
 
     # Checks if the hide clusters checkbox is ticked
     if 'clusters' not in checklist_value:

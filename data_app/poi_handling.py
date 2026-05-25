@@ -44,7 +44,7 @@ def clean_POI_data(df):
 
 
 # Function add_cluster_ids makes an array of POI coordinates, passes them through the DBSCAN algorithm, and adds the resulting cluster ids to the data table
-def add_cluster_ids(df, level, slider_value, on_progress=None, selected_groups=None):
+def add_cluster_ids(df, level, slider_value, on_progress=None, selected_groups=None, min_samples=10):
     from classification import groups, categories, classes
 
     df['cluster id'] = None # Makes a new column in the dataframe to hold the cluster ids
@@ -80,7 +80,7 @@ def add_cluster_ids(df, level, slider_value, on_progress=None, selected_groups=N
             if not coord_array: # Skip classifications with no matching POIs
                 continue
 
-            temp_cluster_ids = spatial_utilities.DBSCAN(coord_array, slider_value)
+            temp_cluster_ids = spatial_utilities.DBSCAN(coord_array, slider_value, min_samples)
 
             num_clusters += len(set(temp_cluster_ids))
             # This if statement eliminates the possibility of -1 counting as a cluster instead the tag for outliers
