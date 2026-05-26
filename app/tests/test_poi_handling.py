@@ -1,4 +1,4 @@
-import poi_handling
+from core import poi_processing as poi_handling
 
 
 # ---------------------------------------------------------------------------

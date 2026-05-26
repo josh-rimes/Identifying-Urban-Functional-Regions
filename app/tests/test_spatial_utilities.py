@@ -1,7 +1,8 @@
 import numpy as np
 import pytest
 
-import spatial_utilities
+from core import spatial_analysis
+from core import clustering
 
 
 # ---------------------------------------------------------------------------
@@ -10,7 +11,7 @@ import spatial_utilities
 
 def test_same_location_has_zero_distance():
     cardiff = [51.4816, -3.1791]
-    result = spatial_utilities.haversine_distance(cardiff, cardiff)
+    result = spatial_analysis.haversine_distance(cardiff, cardiff)
     # haversine_distances returns a 2×2 matrix; [0][1] is the off-diagonal distance
     assert result[0][1] == pytest.approx(0.0, abs=1e-6)
 
@@ -18,7 +19,7 @@ def test_same_location_has_zero_distance():
 def test_cardiff_to_london_distance_is_plausible():
     cardiff = [51.4816, -3.1791]
     london  = [51.5074, -0.1278]
-    result = spatial_utilities.haversine_distance(cardiff, london)
+    result = spatial_analysis.haversine_distance(cardiff, london)
     distance_km = result[0][1]
     # Straight-line distance is approximately 212 km
     assert 200 < distance_km < 230, (
@@ -42,7 +43,7 @@ def test_isolated_poi_is_not_grouped_with_dense_cluster():
     isolated_coord = [[52.5, -3.1791]]
     data = cluster_coords + isolated_coord
 
-    labels = spatial_utilities.DBSCAN(data, size=0.002, min_samples=5)
+    labels = clustering.DBSCAN(data, size=0.002, min_samples=5)
 
     isolated_label = labels[-1]
     assert isolated_label == -1, (
@@ -56,7 +57,7 @@ def test_spatially_separate_groups_produce_distinct_cluster_boundaries(cleaned_p
     bristol_coords = cleaned_poi_df_two_groups[['lat', 'lon']].iloc[15:].values.tolist()
     all_coords = cardiff_coords + bristol_coords
 
-    labels = spatial_utilities.DBSCAN(all_coords, size=0.002, min_samples=5)
+    labels = clustering.DBSCAN(all_coords, size=0.002, min_samples=5)
 
     cardiff_labels = set(labels[:15]) - {-1}
     bristol_labels = set(labels[15:]) - {-1}
@@ -96,7 +97,7 @@ def test_two_distinct_clusters_produce_two_boundary_polygons():
     })
 
     # create_cluster_data expects numpy integers (as produced by DBSCAN), not plain ints
-    lons, lats, colors = spatial_utilities.create_cluster_data(
+    lons, lats, colors = clustering.create_cluster_data(
         df, {np.int32(0), np.int32(1)}, index_bin=[]
     )
 
@@ -112,7 +113,7 @@ def test_two_distinct_clusters_produce_two_boundary_polygons():
 def test_rasterised_polygon_has_filled_interior():
     # Unit square (inset slightly to ensure interior points exist)
     square = [(0.1, 0.1), (0.9, 0.1), (0.9, 0.9), (0.1, 0.9)]
-    grid = spatial_utilities.rasterise_shape(square, grid_size=50, bounds=(0, 1, 0, 1))
+    grid = spatial_analysis.rasterise_shape(square, grid_size=50, bounds=(0, 1, 0, 1))
 
     assert grid.sum() > 0, "Rasterised polygon should contain filled interior cells"
     assert grid.sum() < 50 * 50, "Not every cell should be inside the polygon"
@@ -123,4 +124,4 @@ def test_rasterised_polygon_has_filled_interior():
 # ---------------------------------------------------------------------------
 
 def test_spatial_correlation_is_currently_broken():
-    spatial_utilities.compute_correlation('0', 'E02006827')
+    spatial_analysis.compute_correlation('0', 'E02006827')

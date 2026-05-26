@@ -4,7 +4,8 @@ import pandas as pd
 import pytest
 from dash import html
 
-from data_utilities import classify_data, parse_contents
+from classification import classify_data
+from loaders.file_parser import parse_contents
 
 
 def _encode_upload(csv_text: str, filename: str) -> str:

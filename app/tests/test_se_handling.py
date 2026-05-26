@@ -1,4 +1,4 @@
-import se_handling
+from core import se_processing as se_handling
 
 
 def test_only_msoa_rows_are_retained_after_cleaning(raw_se_df):

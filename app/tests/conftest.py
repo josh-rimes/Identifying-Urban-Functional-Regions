@@ -128,7 +128,7 @@ def reset_index_bin():
     by clean_POI_data.  Without this reset, state from one test leaks into the
     next when tests run in sequence.
     """
-    import poi_handling
+    from core import poi_processing as poi_handling
     poi_handling.index_bin = []
     yield
     poi_handling.index_bin = []

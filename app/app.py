@@ -4,11 +4,9 @@ from dash import Dash, html, dcc, callback, Input, Output, State, no_update
 import io
 import threading
 import pandas as pd
-import data_utilities
-import spatial_utilities
-import map_handling
-import poi_handling
-import se_handling
+from loaders import file_parser
+from core import poi_processing, se_processing, spatial_analysis
+from presentation import map_rendering, ui_components
 
 app = Dash(__name__, suppress_callback_exceptions = True)
 app.title = 'Urban Cluster'
@@ -37,13 +35,13 @@ def _run_processing(poi_df, index_bin, level, slider, display_checklist, cluster
                 _state.status = msg
 
     try:
-        poi_handling.index_bin = index_bin
-        poi_df_result, cluster_data = poi_handling.add_cluster_ids(
+        poi_processing.index_bin = index_bin
+        poi_df_result, cluster_data = poi_processing.add_cluster_ids(
             poi_df, level, slider, on_progress=on_progress, selected_groups=cluster_dropdown, min_samples=min_samples)
 
         on_progress('Creating map...')
-        map_children = map_handling.create_map(poi_df_result, cluster_data, display_checklist, cluster_dropdown, se_df, layer_dropdown, filename)
-        table_children = data_utilities.data_display(poi_df_result, filename)
+        map_children = map_rendering.create_map(poi_df_result, cluster_data, display_checklist, cluster_dropdown, se_df, layer_dropdown, filename)
+        table_children = ui_components.data_display(poi_df_result, filename)
 
         with _state.lock:
             if _state.generation == generation:
@@ -173,10 +171,10 @@ app.layout = html.Div([
 def cache_poi_data(poi_file_input, filename):
     if poi_file_input is None:
         return no_update
-    poi_df = data_utilities.parse_contents(poi_file_input, filename)
+    poi_df = file_parser.parse_contents(poi_file_input, filename)
     if not isinstance(poi_df, pd.DataFrame):
         return no_update
-    poi_df = poi_handling.clean_POI_data(poi_df)
+    poi_df = poi_processing.clean_POI_data(poi_df)
     poi_df = poi_df.reset_index(drop=True)  # Ensure sequential index after dropped invalid rows
     return {
         'filename': filename,
@@ -210,7 +208,7 @@ def update_output(poi_store_data, se_file_input, display_checklist, cluster_drop
     print('\n\nUpdating output:')
 
     poi_df = pd.read_json(io.StringIO(poi_store_data['data']), orient='split') # Load cleaned POI data from cache
-    poi_handling.index_bin = poi_store_data['index_bin'] # Restore index bin used during cleaning
+    poi_processing.index_bin = poi_store_data['index_bin'] # Restore index bin used during cleaning
     # JSON round-trip converts numeric-string codes (e.g. '03170245') to integers; restore as zero-padded strings
     if pd.api.types.is_numeric_dtype(poi_df['pointX classification code']):
         poi_df['pointX classification code'] = poi_df['pointX classification code'].fillna(0).astype(int).astype(str).str.zfill(8)
@@ -220,12 +218,12 @@ def update_output(poi_store_data, se_file_input, display_checklist, cluster_drop
     se_df = pd.DataFrame({'A': []})
     options = ['None']
     if se_file_input is not None:
-        se_df = data_utilities.parse_contents(se_file_input, 'file.csv') # Parse the socio-economic data
-        se_df = se_handling.clean_se_data(se_df) # Clean the socio-economic data
-        options = se_handling.get_layers(se_df) # Set new dropdown list from socio-economic data
+        se_df = file_parser.parse_contents(se_file_input, 'file.csv') # Parse the socio-economic data
+        se_df = se_processing.clean_se_data(se_df) # Clean the socio-economic data
+        options = se_processing.get_layers(se_df) # Set new dropdown list from socio-economic data
 
     if compute_button == 'Click':
-        spatial_utilities.compute_correlation(cluster_id_input, msoa_id_input)
+        spatial_analysis.compute_correlation(cluster_id_input, msoa_id_input)
 
     with _state.lock:
         _state.generation += 1

@@ -1,5 +1,5 @@
 from classification import color_map, groups
-from data_utilities import classify_data
+from classification import classify_data
 
 
 def test_every_group_has_a_display_color():
