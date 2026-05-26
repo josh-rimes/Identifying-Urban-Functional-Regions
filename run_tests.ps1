@@ -19,7 +19,7 @@ $Args = @()
 if ($Verbose) { $Args += "-v" }
 
 if ($Coverage) {
-    $Args += "--cov=data_app"
+    $Args += "--cov=app"
     $Args += "--cov-report=term-missing"
 }
 
