@@ -7,7 +7,8 @@ from classification import color_map
 
 
 _geojson_path = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    'data',
     'Middle_layer_Super_Output_Areas_December_2021_Boundaries_EW_BFC_V7_-4346226057264668960.geojson'
 )
 with open(_geojson_path) as _response:
@@ -67,5 +68,4 @@ def create_map(poi_data, cluster_data, checklist_value, cluster_value, se_data, 
 
     return html.Div([
         dcc.Graph(figure=fig),
-        html.Hr(),
     ])
