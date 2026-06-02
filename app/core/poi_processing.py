@@ -79,13 +79,12 @@ def add_cluster_ids(df, level, slider_value, on_progress=None, selected_groups=N
 
             temp_cluster_ids = _clustering.DBSCAN(coord_array, slider_value, min_samples)
 
-            num_clusters += len(set(temp_cluster_ids))
-            if -1 in cluster_ids:
-                num_clusters -= 1
+            offset = num_clusters
+            num_clusters += len([x for x in set(temp_cluster_ids) if x != -1])
 
-            for i in range(0, len(index_array) - 1):
+            for i in range(0, len(index_array)):
                 if temp_cluster_ids[i] != -1:
-                    temp_cluster_ids[i] += num_clusters
+                    temp_cluster_ids[i] += offset
                     cluster_ids.append(temp_cluster_ids[i])
 
                 df.at[index_array[i], 'cluster id'] = temp_cluster_ids[i]
