@@ -41,3 +41,8 @@ Successfully achieving the goals of the project will require skills in data mini
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
+
+## Gallery
+
+<img width="1878" height="1030" alt="image" src="https://github.com/user-attachments/assets/da0578eb-4d15-4d1f-8ea6-d91e1c86aa1b" />
+

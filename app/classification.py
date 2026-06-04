@@ -687,3 +687,15 @@ def get_lengths():
     print('Groups: ' + str(len(groups)))
     print('Categories: ' + str(len(categories)))
     print('Classes: ' + str(len(classes)))
+
+
+def classify_data(level, pointX_code):
+    try:
+        if level == 1:
+            return groups[pointX_code[:2]]
+        elif level == 2:
+            return categories[pointX_code[2:4]]
+        elif level == 3:
+            return classes[pointX_code[4:]]
+    except Exception as e:
+        print(e)
